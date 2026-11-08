@@ -11,7 +11,8 @@ include:
   - board: xiao_ble//zmk
     shield: FrostOrthoLine_pat9125
     snippet: zmk-usb-logging
-    cmake-args: -DCONFIG_INPUT_LOG_LEVEL_DBG=y
+    # 起動時のログを取りこぼさないよう、ログ出力開始を5秒遅らせる
+    cmake-args: -DCONFIG_INPUT_LOG_LEVEL_DBG=y -DCONFIG_LOG_PROCESS_THREAD_STARTUP_DELAY_MS=5000
     artifact-name: FrostOrthoLine_pat9125_logging
   - board: xiao_ble//zmk
     shield: settings_reset
