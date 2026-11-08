@@ -15,7 +15,7 @@
         res-cpi = <1275>;
         counts-per-revolution = <1275>; // 1回転あたりのカウント数（実機に合わせて調整）
         motion-read-interval-ms = <8>;
-        motion-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        motion-gpios = <&gpio0 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; // D12（基板ピン名 RDY/CS）
         // invert; // 回転方向を逆にする場合
         sleep1-enable;
         sleep2-enable;

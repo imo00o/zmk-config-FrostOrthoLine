@@ -18,15 +18,17 @@
 //  ROW4 = D17 (P1.03)    COL4 = D2  (P0.28)
 //  ROW5 = D7  (P1.12)    COL5 = D15 (P0.10 / NFC2)
 //
-//  PAW3222 (FPC1, SPI)        PAT9125 (FPC2, I2C)
-//   SCLK   = D18 (P1.05)       SDA    = D0  (P0.02)
-//   SDIO   = D9  (P1.14)       SCL    = D11 (P0.15)
-//   MOTION = D19 (P1.07)       MOTION = D1  (P0.03)
-//   CS     = D10 (P1.15)       RDY/CS = D12 (P0.19) 未使用
+//  PAW3222 (FPC1, SPI)        ダイヤルモジュール PAT9125 + プッシュスイッチ (FPC2)
+//   SCLK   = D18 (P1.05)       基板ピン名       接続先       モジュール側
+//   SDIO   = D9  (P1.14)       SDA/SCLK     = D0  (P0.02) = SDA
+//   MOTION = D19 (P1.07)       SCL/SDIO     = D11 (P0.15) = SCL
+//   CS     = D10 (P1.15)       GND/MOTION   = D1  (P0.03) = PUSH（押し込みで L）
+//                              RDY/CS       = D12 (P0.19) = MOTION
+//  ※ FPC2 の基板ピン名とダイヤルモジュールのピンは役割が一致しないので注意
 
 / {
     chosen {
-        zmk,kscan = &kscan0;
+        zmk,kscan = &kscan_composite;
         zmk,physical-layout = &physical_layout0;
     };
 
@@ -34,7 +36,7 @@
         compatible = "zmk,physical-layout";
         display-name = "default_layout";
 
-        kscan = <&kscan0>;
+        kscan = <&kscan_composite>;
         transform = <&default_transform>;
 
         keys  //                     w   h    x    y     rot    rx    ry
@@ -74,21 +76,48 @@
             , <&key_physical_attrs 100 100  900  200       0     0     0>
             , <&key_physical_attrs 100 100 1000  200       0     0     0>
             , <&key_physical_attrs 100 100 1100  200       0     0     0>
+            , <&key_physical_attrs 100 100 1250  100       0     0     0>  // ダイヤルのプッシュスイッチ
             ;
     };
 
     // 電気的マトリクス 6行 x 6列 = 36キー → 物理配置 12列 x 3行
     // 想定: 左半分(物理1〜6列目) = ROW0〜ROW2、右半分(物理7〜12列目) = ROW3〜ROW5
     // PCB の実配線と違う場合はここを入れ替えること
+    // 最後の RC(6,0) はダイヤルのプッシュスイッチ（kscan_push）
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <6>;
-        rows = <6>;
+        rows = <7>;
         map = <
             RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5)   RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5)
             RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5)   RC(4,0) RC(4,1) RC(4,2) RC(4,3) RC(4,4) RC(4,5)
             RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)   RC(5,0) RC(5,1) RC(5,2) RC(5,3) RC(5,4) RC(5,5)
+            RC(6,0)
         >;
+    };
+
+    // キーマトリクスとプッシュスイッチをまとめて1つの kscan として扱う
+    kscan_composite: kscan_composite {
+        compatible = "zmk,kscan-composite";
+        wakeup-source;
+        rows = <7>;
+        columns = <6>;
+
+        matrix {
+            kscan = <&kscan0>;
+        };
+
+        push {
+            kscan = <&kscan_push>;
+            row-offset = <6>;
+        };
+    };
+
+    // ダイヤルのプッシュスイッチ（押し込むと L になるのでプルアップして Active Low で読む）
+    kscan_push: kscan_push {
+        compatible = "zmk,kscan-gpio-direct";
+        wakeup-source;
+        input-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  /* D1 */
     };
 
     kscan0: kscan {
