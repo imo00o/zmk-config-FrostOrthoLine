@@ -13,11 +13,11 @@
 //  ROW4 = D17 (P1.03)    COL4 = D2  (P0.28)
 //  ROW5 = D7  (P1.12)    COL5 = D15 (P0.10 / NFC2)
 //
-//  PAW3222 #1 (FPC1)          PAW3222 #2 (FPC2)
-//   SCLK   = D18 (P1.05)       SCLK   = D0  (P0.02)
-//   SDIO   = D9  (P1.14)       SDIO   = D11 (P0.15)
+//  PAW3222 (FPC1, SPI)        hires-dial / PAT912x (FPC2, I2C)
+//   SCLK   = D18 (P1.05)       SDA    = D0  (P0.02)
+//   SDIO   = D9  (P1.14)       SCL    = D11 (P0.15)
 //   MOTION = D19 (P1.07)       MOTION = D1  (P0.03)
-//   CS     = D10 (P1.15)       CS     = D12 (P0.19)
+//   CS     = D10 (P1.15)       RDY/CS = D12 (P0.19) 未使用
 
 / {
     chosen {
@@ -119,6 +119,8 @@
 #include <dt-bindings/zmk/runtime_input_processor.h>
 #include <zephyr/dt-bindings/dt-util.h>
 #include <mouse-gesture.dtsi>
+#include <zephyr/dt-bindings/i2c/i2c.h>
+#include <behaviors/hires_dial.dtsi>
 
 // ========================================
 // ポインティング設定（DYA Studio から変更可能）
@@ -177,30 +179,6 @@
         #input-processor-cells = <0>;
     };
 
-    // PAW3222 #2: 常時スクロール（縦優先、横に大きく動かすとロック解除）
-    scroll2_runtime_input_processor: scroll2_runtime_input_processor {
-        compatible = "zmk,input-processor-runtime";
-        processor-label = "scroll2";
-        type = <INPUT_EV_REL>;
-        x-codes = <INPUT_REL_X>;
-        y-codes = <INPUT_REL_Y>;
-        xy-to-scroll-enabled;
-        scale-multiplier = <2>;
-        scale-divisor = <3>;
-        rotation-degrees = <0>;
-        track-remainders;
-        x-invert;
-        y-invert;
-        axis-snap-mode = <AXIS_SNAP_MODE_Y>;
-        axis-snap-threshold = <100>;
-
-        temp-layer-transparent-behavior = <&trans>;
-        temp-layer-kp-behavior = <&kp>;
-        temp-layer-keep-keycodes = <LEFT_CONTROL LEFT_SHIFT LEFT_ALT LEFT_GUI RIGHT_CONTROL RIGHT_SHIFT RIGHT_ALT RIGHT_GUI>;
-
-        #input-processor-cells = <0>;
-    };
-
     trackball1_listener: trackball1_listener {
         compatible = "zmk,input-listener";
         status = "okay";
@@ -214,14 +192,25 @@
         >;
     };
 
-    trackball2_listener: trackball2_listener {
+    // hires-dial のスクロール behavior は input イベントとして出力されるため、
+    // リスナーで受けて HID に流す
+    dial_scroll_listener: dial_scroll_listener {
         compatible = "zmk,input-listener";
         status = "okay";
-        device = <&trackball2>;
+        device = <&hires_dial_scroll>;
+    };
 
-        input-processors = <
-            &scroll2_runtime_input_processor
-        >;
+    dial_hscroll_listener: dial_hscroll_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&hires_dial_hscroll>;
+    };
+
+    // dial を keymap の sensor-bindings で使うためのセンサー登録
+    sensors: sensors {
+        compatible = "zmk,keymap-sensors";
+        sensors = <&hires_dial>;
+        triggers-per-rotation = <20>; // &hires_dial_encoder で1回転あたり何回キーを送るか
     };
 };
 
@@ -236,12 +225,12 @@
     status = "disabled";
 };
 
-// spi0 / spi1 は i2c0 / i2c1 と同じペリフェラルを共有するため無効化しておく
+// spi0 は i2c0 と同じペリフェラルを共有するため i2c0 は無効化（dial は i2c1 を使う）
 &i2c0 {
     status = "disabled";
 };
 
-&i2c1 {
+&spi1 {
     status = "disabled";
 };
 
@@ -263,19 +252,19 @@
         };
     };
 
-    spi1_default: spi1_default {
+    i2c1_default: i2c1_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
-                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
-                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            bias-pull-up;
         };
     };
 
-    spi1_sleep: spi1_sleep {
+    i2c1_sleep: i2c1_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
-                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
-                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            bias-pull-up;
             low-power-enable;
         };
     };
@@ -300,21 +289,42 @@
     };
 };
 
-// PAW3222 #2 (FPC2)
-&spi1 {
+// hires-dial / PAT912x (FPC2)
+&i2c1 {
     status = "okay";
-    compatible = "nordic,nrf-spim";
-    pinctrl-0 = <&spi1_default>;
-    pinctrl-1 = <&spi1_sleep>;
+    compatible = "nordic,nrf-twim";
+    pinctrl-0 = <&i2c1_default>;
+    pinctrl-1 = <&i2c1_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+    clock-frequency = <I2C_BITRATE_FAST>;
 
-    trackball2: trackball@0 {
+    hires_dial: hires_dial@75 {
         status = "okay";
-        compatible = "pixart,paw3222";
-        reg = <0>;
-        spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        res-cpi = <1500>;
+        compatible = "sekigon,hires-dial";
+        reg = <0x75>;
+        res-cpi = <1275>;
+        counts-per-revolution = <1275>; // 1回転あたりのカウント数（実機に合わせて調整）
+        motion-read-interval-ms = <8>;
+        motion-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        // invert; // 回転方向を逆にする場合
+        sleep1-enable;
+        sleep2-enable;
     };
+};
+
+// dial 用 behavior（keymap の sensor-bindings で使う）
+&hires_dial_encoder {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_scroll {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_hscroll {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_radial_controller {
+    sensor = <&hires_dial>;
 };

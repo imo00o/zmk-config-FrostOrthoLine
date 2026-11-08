@@ -16,6 +16,9 @@ manifest:
     - name: zmk-driver-paw3222
       remote: sekigon-gonnoc
       revision: main
+    - name: zmk-driver-hires-dial
+      remote: sekigon-gonnoc
+      revision: main
     - name: zmk-mouse-gesture
       remote: kot149
       revision: v1

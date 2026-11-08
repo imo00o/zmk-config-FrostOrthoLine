@@ -1,11 +1,13 @@
 # zmk-config-FrostOrthoLine
 
-FrostOrthoLine（12列×3行・PAW3222 ×2 搭載の一体型キーボード）用の ZMK ファームウェア設定です。
+FrostOrthoLine（12列×3行・PAW3222 + 高分解能ダイヤル搭載の一体型キーボード）用の ZMK ファームウェア設定です。
 
 - MCU: Seeed Studio XIAO nRF52840 Plus（ビルドボードは `seeeduino_xiao_ble`）
 - キーマトリクス: 6行×6列（col2row）
-- PAW3222 #1（FPC1）: カーソル移動 + 自動マウスレイヤー（レイヤー6）、レイヤー5で縦スクロール、レイヤー7で横スクロール
-- PAW3222 #2（FPC2）: 常時スクロール
+- PAW3222（FPC1, SPI）: カーソル移動 + 自動マウスレイヤー（レイヤー6）、レイヤー5で縦スクロール、レイヤー7で横スクロール
+- 高分解能ダイヤル（FPC2, I2C, [zmk-driver-hires-dial](https://github.com/sekigon-gonnoc/zmk-driver-hires-dial)）: 通常は縦スクロール、レイヤー1で音量、レイヤー7で横スクロール
+
+PAW3222 を2個使う構成は `main` ブランチにあります。
 
 ## ビルド
 

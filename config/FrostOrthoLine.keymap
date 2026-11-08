@@ -63,6 +63,10 @@
 &mt LEFT_CONTROL ESC   &kp A          &kp S  &kp D  &kp F  &kp G      &kp H  &kp J  &kp K      &kp L       &lt 5 MINUS   &lt 3 ENTER
 &lt 2 SPACE            &mt LSHIFT Z   &kp X  &kp C  &kp V  &kp B      &kp N  &kp M  &kp COMMA  &kp PERIOD  &lt 7 SLASH   &lt 1 LANG1
             >;
+
+            // ダイヤル: 縦スクロール（<入力カウント 出力値>、1 1 = 1カウントでホイール値1）
+            // sensor-bindings がないレイヤーでは下のレイヤーの割り当てが使われる
+            sensor-bindings = <&hires_dial_scroll 1 1>;
         };
 
         layer_1 {
@@ -71,6 +75,9 @@
 &trans  &trans  &trans  &trans  &trans  &trans      &kp F6  &kp F7  &kp F8  &kp F9   &kp F10  &kp ESCAPE
 &trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans  &kp F11  &kp F12  &trans
             >;
+
+            // ダイヤル: 音量（1回転あたり triggers-per-rotation 回キーを送る）
+            sensor-bindings = <&hires_dial_encoder C_VOL_UP C_VOL_DN>;
         };
 
         layer_2 {
@@ -122,6 +129,9 @@
 &trans  &trans     &trans       &trans       &trans       &trans      &trans  &trans  &trans  &trans  &trans  &trans
 &trans  &trans     &screenshot  &kp LC(INS)  &kp LS(INS)  &trans      &trans  &trans  &trans  &trans  &trans  &trans
             >;
+
+            // ダイヤル: 横スクロール
+            sensor-bindings = <&hires_dial_hscroll 1 1>;
         };
     };
 };
