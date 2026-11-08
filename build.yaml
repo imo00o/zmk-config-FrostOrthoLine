@@ -1,18 +1,7 @@
 include:
-  # ダイヤル版（FPC2 に hires-dial）
+  # FPC1 にダイヤル（hires-dial）、FPC2 に PAW3222
   - board: xiao_ble//zmk
     shield: FrostOrthoLine
     snippet: studio-rpc-usb-uart
-  # PAT9125 トラックボール試験版（FPC2 の PAT9125 をカーソルとして使う）
-  - board: xiao_ble//zmk
-    shield: FrostOrthoLine_pat9125
-    snippet: studio-rpc-usb-uart
-  # PAT9125 トラックボール試験版のログ出力付き（USB シリアルにドライバのログを出す）
-  - board: xiao_ble//zmk
-    shield: FrostOrthoLine_pat9125
-    snippet: zmk-usb-logging
-    # 起動時のログを取りこぼさないよう、ログ出力開始を5秒遅らせる
-    cmake-args: -DCONFIG_INPUT_LOG_LEVEL_DBG=y -DCONFIG_LOG_PROCESS_THREAD_STARTUP_DELAY_MS=5000
-    artifact-name: FrostOrthoLine_pat9125_logging
   - board: xiao_ble//zmk
     shield: settings_reset

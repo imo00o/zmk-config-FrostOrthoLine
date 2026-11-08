@@ -1,7 +1,5 @@
-// FrostOrthoLine 共通定義（キーマトリクス・PAW3222・FPC2 の I2C バス）
-// FPC2 に何をつなぐかは各シールドの overlay で決める
-//   FrostOrthoLine.overlay         : hires-dial（ダイヤル）
-//   FrostOrthoLine_pat9125.overlay : PAT9125 をトラックボールとして使う（試験用）
+// FrostOrthoLine 共通定義（キーマトリクス・FPC2 の PAW3222・FPC1 の I2C バスとプッシュスイッチ）
+// FPC1 のダイヤル（hires-dial）本体の定義は FrostOrthoLine.overlay
 
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
@@ -18,13 +16,19 @@
 //  ROW4 = D17 (P1.03)    COL4 = D2  (P0.28)
 //  ROW5 = D7  (P1.12)    COL5 = D15 (P0.10 / NFC2)
 //
-//  PAW3222 (FPC1, SPI)        ダイヤルモジュール PAT9125 + プッシュスイッチ (FPC2)
-//   SCLK   = D18 (P1.05)       基板ピン名       接続先       モジュール側
-//   SDIO   = D9  (P1.14)       SDA/SCLK     = D0  (P0.02) = SDA
-//   MOTION = D19 (P1.07)       SCL/SDIO     = D11 (P0.15) = SCL
-//   CS     = D10 (P1.15)       GND/MOTION   = D1  (P0.03) = PUSH（押し込みで L）
-//                              RDY/CS       = D12 (P0.19) = MOTION
-//  ※ FPC2 の基板ピン名とダイヤルモジュールのピンは役割が一致しないので注意
+//  ダイヤルモジュール PAT9125 + プッシュスイッチ (FPC1, I2C)
+//   基板ピン名       接続先        モジュール側
+//   SDA/SCLK 1   = D18 (P1.05) = SDA
+//   SCL/SDIO 1   = D9  (P1.14) = SCL
+//   GND/MOTION 1 = D19 (P1.07) = PUSH（押し込みで L）
+//   RDY/CS 1     = D10 (P1.15) = MOTION
+//  ※ 基板ピン名とダイヤルモジュールのピンは役割が一致しないので注意
+//
+//  PAW3222 (FPC2, SPI)
+//   SCLK   = D0  (P0.02)
+//   SDIO   = D11 (P0.15)
+//   MOTION = D1  (P0.03)
+//   CS     = D12 (P0.19)
 
 / {
     chosen {
@@ -120,7 +124,7 @@
     kscan_push: kscan_push {
         compatible = "zmk,kscan-gpio-direct";
         wakeup-source;
-        input-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  /* D1 */
+        input-gpios = <&gpio1 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;  /* D19 (FPC1) */
     };
 
     kscan0: kscan {
@@ -235,12 +239,12 @@
 };
 
 // ========================================
-// SPI（PAW3222, FPC1）
+// SPI（PAW3222, FPC2）
 // PAW3222 は 3線式 SPI（SDIO 1本で送受信）なので MOSI と MISO を同じピンにする
 // ========================================
 
 // 基板標準の spi2 (xiao_spi) は D8〜D10 (P1.13〜P1.15) を使うため、
-// ROW3 / SDIO / CS と衝突しないよう無効化する
+// ROW3 / ダイヤルの SCL / ダイヤルの MOTION と衝突しないよう無効化する
 &spi2 {
     status = "disabled";
 };
@@ -255,61 +259,63 @@
 };
 
 &pinctrl {
+    // PAW3222 (FPC2)
     spi0_default: spi0_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 1, 5)>,
-                <NRF_PSEL(SPIM_MOSI, 1, 14)>,
-                <NRF_PSEL(SPIM_MISO, 1, 14)>;
+            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
+                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
+                <NRF_PSEL(SPIM_MISO, 0, 15)>;
         };
     };
 
     spi0_sleep: spi0_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 1, 5)>,
-                <NRF_PSEL(SPIM_MOSI, 1, 14)>,
-                <NRF_PSEL(SPIM_MISO, 1, 14)>;
+            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
+                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
+                <NRF_PSEL(SPIM_MISO, 0, 15)>;
             low-power-enable;
         };
     };
 
-    // 基板標準の i2c1 は D4/D5 (P0.04/P0.05) を使うので FPC2 のピンに付け替える
+    // 基板標準の i2c1 は D4/D5 (P0.04/P0.05) を使うので FPC1 のピンに付け替える
     i2c1_default: i2c1_default {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
-                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 1, 5)>,
+                <NRF_PSEL(TWIM_SCL, 1, 14)>;
             bias-pull-up;
         };
     };
 
     i2c1_sleep: i2c1_sleep {
         group1 {
-            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
-                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 1, 5)>,
+                <NRF_PSEL(TWIM_SCL, 1, 14)>;
             bias-pull-up;
             low-power-enable;
         };
     };
 };
 
+// PAW3222 (FPC2)
 &spi0 {
     status = "okay";
     compatible = "nordic,nrf-spim";
     pinctrl-0 = <&spi0_default>;
     pinctrl-1 = <&spi0_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+    cs-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
 
     trackball1: trackball@0 {
         status = "okay";
         compatible = "pixart,paw3222";
         reg = <0>;
         spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio1 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        irq-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
         res-cpi = <1500>;
     };
 };
 
-// FPC2 の I2C バス（センサーノードは各シールドの overlay で追加）
+// FPC1 の I2C バス（ダイヤル本体の定義は FrostOrthoLine.overlay）
 &i2c1 {
     status = "okay";
     compatible = "nordic,nrf-twim";
