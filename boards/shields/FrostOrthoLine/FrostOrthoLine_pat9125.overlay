@@ -1,18 +1,19 @@
 // FrostOrthoLine_pat9125: FPC2 の PAT9125 をトラックボールセンサーとして試す構成
-// Zephyr 4.1 標準の pixart,pat912x 入力ドライバを使い、X/Y をカーソル移動として出す
+// このリポジトリの src/pat9125_input.c（pixart,pat9125-zmk）で X/Y をカーソル移動として出す
+// ※ Zephyr 標準の pixart,pat912x は MOTION のエッジを取りこぼして反応しなくなったため使わない
 
 #include "FrostOrthoLine.dtsi"
 
 &i2c1 {
     pat9125: pat9125@75 {
         status = "okay";
-        compatible = "pixart,pat912x";
+        compatible = "pixart,pat9125-zmk";
         reg = <0x75>;
         motion-gpios = <&gpio0 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; // D12（基板ピン名 RDY/CS）
-        zephyr,axis-x = <INPUT_REL_X>;
-        zephyr,axis-y = <INPUT_REL_Y>;
         res-x-cpi = <1275>; // 0〜1275（5刻み）
         res-y-cpi = <1275>;
+        motion-read-interval-ms = <8>; // MOTION が出ている間の読み取り間隔
+        // swap-xy;  // X と Y を入れ替える場合
         // invert-x; // 向きが逆なら有効化（DYA Studio の pat9125 プロセッサでも変更可）
         // invert-y;
         sleep1-enable;

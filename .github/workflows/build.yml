@@ -7,14 +7,20 @@ on:
       - 'boards/**'
       - 'build.yaml'
       - 'CMakeLists.txt'
+      - 'Kconfig'
       - 'zephyr/**'
+      - 'src/**'
+      - 'dts/**'
   pull_request:
     paths:
       - 'config/**'
       - 'boards/**'
       - 'build.yaml'
       - 'CMakeLists.txt'
+      - 'Kconfig'
       - 'zephyr/**'
+      - 'src/**'
+      - 'dts/**'
   workflow_dispatch:
 
 jobs:

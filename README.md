@@ -13,7 +13,7 @@ PAW3222 を2個使う構成は `main` ブランチにあります（こちらは
 ## ビルドされるファームウェア
 
 - `FrostOrthoLine` のファームウェア: FPC2 の PAT9125 を高分解能ダイヤル（[zmk-driver-hires-dial](https://github.com/sekigon-gonnoc/zmk-driver-hires-dial)）として使います。通常は縦スクロール、レイヤー1で音量、レイヤー7で横スクロールです。
-- `FrostOrthoLine_pat9125` のファームウェア: トラックボールの試験用です。Zephyr 標準の `pixart,pat912x` ドライバで、PAT9125 の X/Y をカーソル移動として出します。
+- `FrostOrthoLine_pat9125` のファームウェア: トラックボールの試験用です。このリポジトリの `src/pat9125_input.c`（`pixart,pat9125-zmk`）で、PAT9125 の X/Y をカーソル移動として出します。Zephyr 標準の `pixart,pat912x` は MOTION のエッジを取りこぼして反応しなくなったため、割り込み方式を hires-dial と同じレベル検出にしたドライバを使っています。
 - `settings_reset` のファームウェア: 設定リセット用です。
 
 `config/`・`boards/` などを変更して push すると GitHub Actions でビルドされ、Artifacts に出力されます。
@@ -24,6 +24,7 @@ PAW3222 を2個使う構成は `main` ブランチにあります（こちらは
 - `boards/shields/FrostOrthoLine/FrostOrthoLine.overlay`: ダイヤル版
 - `boards/shields/FrostOrthoLine/FrostOrthoLine_pat9125.overlay`: PAT9125 トラックボール試験版
 - `config/FrostOrthoLine.conf` / `config/FrostOrthoLine.keymap`: 両シールド共通の設定とキーマップ
+- `src/pat9125_input.c`、`dts/bindings/input/pixart,pat9125-zmk.yaml`、`Kconfig`: PAT9125 を X/Y カーソル入力として使うドライバ（このリポジトリ自体を Zephyr モジュールとして読み込ませている）
 
 ## DYA Studio
 
