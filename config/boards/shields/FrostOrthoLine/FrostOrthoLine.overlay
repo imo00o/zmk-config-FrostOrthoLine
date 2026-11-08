@@ -1,12 +1,7 @@
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
-#include <input/processors.dtsi>
-#include <dt-bindings/zmk/input_transform.h>
-#include <zephyr/dt-bindings/input/input-event-codes.h>
-#include <input/processors/runtime-input-processor.dtsi>
-#include <dt-bindings/zmk/runtime_input_processor.h>
-#include <zephyr/dt-bindings/dt-util.h>
-#include <mouse-gesture.dtsi>
+// 注意: ポインティング系のヘッダ（keys.h を含む）はマトリクス定義より後で include すること。
+// keys.h が修飾キー用の RC(keycode) を定義するため、先に読むと RC(行,列) がエラーになる。
 
 // ========================================
 // ピン割り当て（XIAO nRF52840 Plus）
@@ -116,6 +111,14 @@
             ;
     };
 };
+
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors/runtime-input-processor.dtsi>
+#include <dt-bindings/zmk/runtime_input_processor.h>
+#include <zephyr/dt-bindings/dt-util.h>
+#include <mouse-gesture.dtsi>
 
 // ========================================
 // ポインティング設定（DYA Studio から変更可能）
