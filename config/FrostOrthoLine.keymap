@@ -37,7 +37,7 @@
 };
 
 / {
-    combos { compatible = "zmk,combos"; };
+    // コンボは DYA Studio（zmk-feature-runtime-combo）から追加・編集する
 
     macros {
         screenshot: screenshot {
@@ -49,8 +49,6 @@
                 <&kp LEFT_WIN &kp LEFT_SHIFT &kp S>,
                 <&macro_release>,
                 <&kp LEFT_WIN &kp LEFT_SHIFT &kp S>;
-
-            label = "SCREENSHOT";
         };
     };
 
@@ -64,9 +62,11 @@
 &lt 2 SPACE            &mt LSHIFT Z   &kp X  &kp C  &kp V  &kp B      &kp N  &kp M  &kp COMMA  &kp PERIOD  &lt 7 SLASH   &lt 1 LANG1
             >;
 
+#ifdef FROSTORTHOLINE_HIRES_DIAL
             // ダイヤル: 縦スクロール（<入力カウント 出力値>、1 1 = 1カウントでホイール値1）
             // sensor-bindings がないレイヤーでは下のレイヤーの割り当てが使われる
             sensor-bindings = <&hires_dial_scroll 1 1>;
+#endif
         };
 
         layer_1 {
@@ -76,8 +76,10 @@
 &trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans  &kp F11  &kp F12  &trans
             >;
 
+#ifdef FROSTORTHOLINE_HIRES_DIAL
             // ダイヤル: 音量（1回転あたり triggers-per-rotation 回キーを送る）
             sensor-bindings = <&hires_dial_encoder C_VOL_UP C_VOL_DN>;
+#endif
         };
 
         layer_2 {
@@ -130,8 +132,10 @@
 &trans  &trans     &screenshot  &kp LC(INS)  &kp LS(INS)  &trans      &trans  &trans  &trans  &trans  &trans  &trans
             >;
 
+#ifdef FROSTORTHOLINE_HIRES_DIAL
             // ダイヤル: 横スクロール
             sensor-bindings = <&hires_dial_hscroll 1 1>;
+#endif
         };
     };
 };

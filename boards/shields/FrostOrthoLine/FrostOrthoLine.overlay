@@ -1,0 +1,63 @@
+// FrostOrthoLine: FPC2 に PAT9125 の高分解能ダイヤルをつなぐ構成
+// https://github.com/sekigon-gonnoc/zmk-driver-hires-dial
+
+#include "FrostOrthoLine.dtsi"
+#include <behaviors/hires_dial.dtsi>
+
+// keymap 側でダイヤル用の sensor-bindings を有効にする
+#define FROSTORTHOLINE_HIRES_DIAL
+
+&i2c1 {
+    hires_dial: hires_dial@75 {
+        status = "okay";
+        compatible = "sekigon,hires-dial";
+        reg = <0x75>;
+        res-cpi = <1275>;
+        counts-per-revolution = <1275>; // 1回転あたりのカウント数（実機に合わせて調整）
+        motion-read-interval-ms = <8>;
+        motion-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        // invert; // 回転方向を逆にする場合
+        sleep1-enable;
+        sleep2-enable;
+    };
+};
+
+/ {
+    // hires-dial のスクロール behavior は input イベントとして出力されるため、
+    // リスナーで受けて HID に流す
+    dial_scroll_listener: dial_scroll_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&hires_dial_scroll>;
+    };
+
+    dial_hscroll_listener: dial_hscroll_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&hires_dial_hscroll>;
+    };
+
+    // dial を keymap の sensor-bindings で使うためのセンサー登録
+    sensors: sensors {
+        compatible = "zmk,keymap-sensors";
+        sensors = <&hires_dial>;
+        triggers-per-rotation = <20>; // &hires_dial_encoder で1回転あたり何回キーを送るか
+    };
+};
+
+// dial 用 behavior（keymap の sensor-bindings で使う）
+&hires_dial_encoder {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_scroll {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_hscroll {
+    sensor = <&hires_dial>;
+};
+
+&hires_dial_radial_controller {
+    sensor = <&hires_dial>;
+};

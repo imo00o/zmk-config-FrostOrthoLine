@@ -1,3 +1,8 @@
+// FrostOrthoLine 共通定義（キーマトリクス・PAW3222・FPC2 の I2C バス）
+// FPC2 に何をつなぐかは各シールドの overlay で決める
+//   FrostOrthoLine.overlay         : hires-dial（ダイヤル）
+//   FrostOrthoLine_pat9125.overlay : PAT9125 をトラックボールとして使う（試験用）
+
 #include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 // 注意: ポインティング系のヘッダ（keys.h を含む）はマトリクス定義より後で include すること。
@@ -13,7 +18,7 @@
 //  ROW4 = D17 (P1.03)    COL4 = D2  (P0.28)
 //  ROW5 = D7  (P1.12)    COL5 = D15 (P0.10 / NFC2)
 //
-//  PAW3222 (FPC1, SPI)        hires-dial / PAT912x (FPC2, I2C)
+//  PAW3222 (FPC1, SPI)        PAT9125 (FPC2, I2C)
 //   SCLK   = D18 (P1.05)       SDA    = D0  (P0.02)
 //   SDIO   = D9  (P1.14)       SCL    = D11 (P0.15)
 //   MOTION = D19 (P1.07)       MOTION = D1  (P0.03)
@@ -88,7 +93,6 @@
 
     kscan0: kscan {
         compatible = "zmk,kscan-gpio-matrix";
-        label = "KSCAN";
         wakeup-source;
         diode-direction = "col2row";
 
@@ -118,16 +122,21 @@
 #include <input/processors/runtime-input-processor.dtsi>
 #include <dt-bindings/zmk/runtime_input_processor.h>
 #include <zephyr/dt-bindings/dt-util.h>
-#include <mouse-gesture.dtsi>
 #include <zephyr/dt-bindings/i2c/i2c.h>
-#include <behaviors/hires_dial.dtsi>
+#include <mouse-gesture.dtsi>
+
+// COL1(P0.09) / COL5(P0.10) は NFC ピンなので GPIO として使う設定
+// （Zephyr 4.x では Kconfig の CONFIG_NFCT_PINS_AS_GPIOS ではなくこちら）
+&uicr {
+    nfct-pins-as-gpios;
+};
 
 // ========================================
 // ポインティング設定（DYA Studio から変更可能）
 // ここの値は初期値。DYA Studio で保存した設定があればそちらが優先される
 // ========================================
 
-// PAW3222 #1: カーソル移動 + AML
+// PAW3222: カーソル移動 + AML
 &mouse_runtime_input_processor {
     scale-multiplier = <2>; // カーソル移動量2/3倍
     scale-divisor = <3>;
@@ -141,7 +150,7 @@
     temp-layer-deactivation-delay-ms = <65535>; // タイムアウト時間（最大65535ms）
 };
 
-// PAW3222 #1: 縦スクロール（レイヤー5押下中）
+// PAW3222: 縦スクロール（レイヤー5押下中）
 &scroll_runtime_input_processor {
     x-codes = <INPUT_REL_X>;
     y-codes = <INPUT_REL_Y>;
@@ -156,7 +165,7 @@
 };
 
 / {
-    // PAW3222 #1: 横スクロール（レイヤー7押下中）
+    // PAW3222: 横スクロール（レイヤー7押下中）
     hscroll_runtime_input_processor: hscroll_runtime_input_processor {
         compatible = "zmk,input-processor-runtime";
         processor-label = "hscroll";
@@ -191,41 +200,20 @@
             &hscroll_runtime_input_processor
         >;
     };
-
-    // hires-dial のスクロール behavior は input イベントとして出力されるため、
-    // リスナーで受けて HID に流す
-    dial_scroll_listener: dial_scroll_listener {
-        compatible = "zmk,input-listener";
-        status = "okay";
-        device = <&hires_dial_scroll>;
-    };
-
-    dial_hscroll_listener: dial_hscroll_listener {
-        compatible = "zmk,input-listener";
-        status = "okay";
-        device = <&hires_dial_hscroll>;
-    };
-
-    // dial を keymap の sensor-bindings で使うためのセンサー登録
-    sensors: sensors {
-        compatible = "zmk,keymap-sensors";
-        sensors = <&hires_dial>;
-        triggers-per-rotation = <20>; // &hires_dial_encoder で1回転あたり何回キーを送るか
-    };
 };
 
 // ========================================
-// SPI
+// SPI（PAW3222, FPC1）
 // PAW3222 は 3線式 SPI（SDIO 1本で送受信）なので MOSI と MISO を同じピンにする
 // ========================================
 
 // 基板標準の spi2 (xiao_spi) は D8〜D10 (P1.13〜P1.15) を使うため、
-// ROW3 / SDIO1 / CS1 と衝突しないよう無効化する
+// ROW3 / SDIO / CS と衝突しないよう無効化する
 &spi2 {
     status = "disabled";
 };
 
-// spi0 は i2c0 と同じペリフェラルを共有するため i2c0 は無効化（dial は i2c1 を使う）
+// spi0 と i2c0、spi1 と i2c1 はそれぞれ同じペリフェラルを共有する
 &i2c0 {
     status = "disabled";
 };
@@ -252,6 +240,7 @@
         };
     };
 
+    // 基板標準の i2c1 は D4/D5 (P0.04/P0.05) を使うので FPC2 のピンに付け替える
     i2c1_default: i2c1_default {
         group1 {
             psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
@@ -270,7 +259,6 @@
     };
 };
 
-// PAW3222 #1 (FPC1)
 &spi0 {
     status = "okay";
     compatible = "nordic,nrf-spim";
@@ -289,7 +277,7 @@
     };
 };
 
-// hires-dial / PAT912x (FPC2)
+// FPC2 の I2C バス（センサーノードは各シールドの overlay で追加）
 &i2c1 {
     status = "okay";
     compatible = "nordic,nrf-twim";
@@ -297,34 +285,4 @@
     pinctrl-1 = <&i2c1_sleep>;
     pinctrl-names = "default", "sleep";
     clock-frequency = <I2C_BITRATE_FAST>;
-
-    hires_dial: hires_dial@75 {
-        status = "okay";
-        compatible = "sekigon,hires-dial";
-        reg = <0x75>;
-        res-cpi = <1275>;
-        counts-per-revolution = <1275>; // 1回転あたりのカウント数（実機に合わせて調整）
-        motion-read-interval-ms = <8>;
-        motion-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        // invert; // 回転方向を逆にする場合
-        sleep1-enable;
-        sleep2-enable;
-    };
-};
-
-// dial 用 behavior（keymap の sensor-bindings で使う）
-&hires_dial_encoder {
-    sensor = <&hires_dial>;
-};
-
-&hires_dial_scroll {
-    sensor = <&hires_dial>;
-};
-
-&hires_dial_hscroll {
-    sensor = <&hires_dial>;
-};
-
-&hires_dial_radial_controller {
-    sensor = <&hires_dial>;
 };

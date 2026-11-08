@@ -1,6 +1,11 @@
 include:
-  - board: seeeduino_xiao_ble
+  # ダイヤル版（FPC2 に hires-dial）
+  - board: xiao_ble//zmk
     shield: FrostOrthoLine
     snippet: studio-rpc-usb-uart
-  - board: seeeduino_xiao_ble
+  # PAT9125 トラックボール試験版（FPC2 の PAT9125 をカーソルとして使う）
+  - board: xiao_ble//zmk
+    shield: FrostOrthoLine_pat9125
+    snippet: studio-rpc-usb-uart
+  - board: xiao_ble//zmk
     shield: settings_reset

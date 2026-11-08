@@ -2,16 +2,17 @@ manifest:
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: sekigon-gonnoc  # PAW3222
-      url-base: https://github.com/sekigon-gonnoc
     - name: cormoran
       url-base: https://github.com/cormoran
+    - name: sekigon-gonnoc  # PAW3222 / hires-dial
+      url-base: https://github.com/sekigon-gonnoc
     - name: kot149  # マウスジェスチャー
       url-base: https://github.com/kot149
   projects:
+    # ZMK main (Zephyr 4.1) + DYA Studio 対応の cormoran 版
     - name: zmk
       remote: cormoran
-      revision: v0.3-branch+dya
+      revision: main+dya
       import: app/west.yml
     - name: zmk-driver-paw3222
       remote: sekigon-gonnoc
@@ -21,16 +22,22 @@ manifest:
       revision: master
     - name: zmk-mouse-gesture
       remote: kot149
-      revision: v1
+      revision: v2
     # DYA Studio モジュール
     - name: zmk-module-ble-management
       remote: cormoran
-      revision: zmk-v0.3.0.0
+      revision: main
     - name: zmk-module-settings-rpc
       remote: cormoran
-      revision: zmk-v0.3.0.0
+      revision: main
     - name: zmk-module-runtime-input-processor
       remote: cormoran
-      revision: zmk-v0.3.0.0
+      revision: main
+    - name: zmk-feature-custom-settings
+      remote: cormoran
+      revision: main
+    - name: zmk-feature-runtime-combo
+      remote: cormoran
+      revision: main
   self:
     path: config

@@ -1,0 +1,5 @@
+config SHIELD_FROSTORTHOLINE
+    def_bool $(shields_list_contains,FrostOrthoLine)
+
+config SHIELD_FROSTORTHOLINE_PAT9125
+    def_bool $(shields_list_contains,FrostOrthoLine_pat9125)

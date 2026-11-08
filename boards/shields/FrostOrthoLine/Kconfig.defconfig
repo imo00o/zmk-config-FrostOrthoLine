@@ -1,0 +1,9 @@
+if SHIELD_FROSTORTHOLINE || SHIELD_FROSTORTHOLINE_PAT9125
+
+config ZMK_KEYBOARD_NAME
+    default "FrostOrthoLine"
+
+config ZMK_POINTING
+    default y
+
+endif
