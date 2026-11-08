@@ -1,0 +1,10 @@
+file_format: "1.0.0"
+id: FrostOrthoLine
+name: FrostOrthoLine
+type: shield
+url: https://github.com/imo00o/zmk-config-FrostOrthoLine
+requires: [seeeduino_xiao_ble]
+features:
+  - keys
+  - pointing
+  - studio

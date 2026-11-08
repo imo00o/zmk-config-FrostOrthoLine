@@ -1,0 +1,317 @@
+#include <dt-bindings/zmk/matrix_transform.h>
+#include <physical_layouts.dtsi>
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <input/processors/runtime-input-processor.dtsi>
+#include <dt-bindings/zmk/runtime_input_processor.h>
+#include <zephyr/dt-bindings/dt-util.h>
+#include <mouse-gesture.dtsi>
+
+// ========================================
+// ピン割り当て（XIAO nRF52840 Plus）
+// ========================================
+//  ROW0 = D5  (P0.05)    COL0 = D4  (P0.04)
+//  ROW1 = D16 (P0.31)    COL1 = D14 (P0.09 / NFC1)
+//  ROW2 = D6  (P1.11)    COL2 = D3  (P0.29)
+//  ROW3 = D8  (P1.13)    COL3 = D13 (P1.01)
+//  ROW4 = D17 (P1.03)    COL4 = D2  (P0.28)
+//  ROW5 = D7  (P1.12)    COL5 = D15 (P0.10 / NFC2)
+//
+//  PAW3222 #1 (FPC1)          PAW3222 #2 (FPC2)
+//   SCLK   = D18 (P1.05)       SCLK   = D0  (P0.02)
+//   SDIO   = D9  (P1.14)       SDIO   = D11 (P0.15)
+//   MOTION = D19 (P1.07)       MOTION = D1  (P0.03)
+//   CS     = D10 (P1.15)       CS     = D12 (P0.19)
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+        zmk,physical-layout = &physical_layout0;
+    };
+
+    physical_layout0: physical_layout_0 {
+        compatible = "zmk,physical-layout";
+        display-name = "default_layout";
+
+        kscan = <&kscan0>;
+        transform = <&default_transform>;
+
+        keys  //                     w   h    x    y     rot    rx    ry
+            = <&key_physical_attrs 100 100    0    0       0     0     0>
+            , <&key_physical_attrs 100 100  100    0       0     0     0>
+            , <&key_physical_attrs 100 100  200    0       0     0     0>
+            , <&key_physical_attrs 100 100  300    0       0     0     0>
+            , <&key_physical_attrs 100 100  400    0       0     0     0>
+            , <&key_physical_attrs 100 100  500    0       0     0     0>
+            , <&key_physical_attrs 100 100  600    0       0     0     0>
+            , <&key_physical_attrs 100 100  700    0       0     0     0>
+            , <&key_physical_attrs 100 100  800    0       0     0     0>
+            , <&key_physical_attrs 100 100  900    0       0     0     0>
+            , <&key_physical_attrs 100 100 1000    0       0     0     0>
+            , <&key_physical_attrs 100 100 1100    0       0     0     0>
+            , <&key_physical_attrs 100 100    0  100       0     0     0>
+            , <&key_physical_attrs 100 100  100  100       0     0     0>
+            , <&key_physical_attrs 100 100  200  100       0     0     0>
+            , <&key_physical_attrs 100 100  300  100       0     0     0>
+            , <&key_physical_attrs 100 100  400  100       0     0     0>
+            , <&key_physical_attrs 100 100  500  100       0     0     0>
+            , <&key_physical_attrs 100 100  600  100       0     0     0>
+            , <&key_physical_attrs 100 100  700  100       0     0     0>
+            , <&key_physical_attrs 100 100  800  100       0     0     0>
+            , <&key_physical_attrs 100 100  900  100       0     0     0>
+            , <&key_physical_attrs 100 100 1000  100       0     0     0>
+            , <&key_physical_attrs 100 100 1100  100       0     0     0>
+            , <&key_physical_attrs 100 100    0  200       0     0     0>
+            , <&key_physical_attrs 100 100  100  200       0     0     0>
+            , <&key_physical_attrs 100 100  200  200       0     0     0>
+            , <&key_physical_attrs 100 100  300  200       0     0     0>
+            , <&key_physical_attrs 100 100  400  200       0     0     0>
+            , <&key_physical_attrs 100 100  500  200       0     0     0>
+            , <&key_physical_attrs 100 100  600  200       0     0     0>
+            , <&key_physical_attrs 100 100  700  200       0     0     0>
+            , <&key_physical_attrs 100 100  800  200       0     0     0>
+            , <&key_physical_attrs 100 100  900  200       0     0     0>
+            , <&key_physical_attrs 100 100 1000  200       0     0     0>
+            , <&key_physical_attrs 100 100 1100  200       0     0     0>
+            ;
+    };
+
+    // 電気的マトリクス 6行 x 6列 = 36キー → 物理配置 12列 x 3行
+    // 想定: 左半分(物理1〜6列目) = ROW0〜ROW2、右半分(物理7〜12列目) = ROW3〜ROW5
+    // PCB の実配線と違う場合はここを入れ替えること
+    default_transform: keymap_transform_0 {
+        compatible = "zmk,matrix-transform";
+        columns = <6>;
+        rows = <6>;
+        map = <
+            RC(0,0) RC(0,1) RC(0,2) RC(0,3) RC(0,4) RC(0,5)   RC(3,0) RC(3,1) RC(3,2) RC(3,3) RC(3,4) RC(3,5)
+            RC(1,0) RC(1,1) RC(1,2) RC(1,3) RC(1,4) RC(1,5)   RC(4,0) RC(4,1) RC(4,2) RC(4,3) RC(4,4) RC(4,5)
+            RC(2,0) RC(2,1) RC(2,2) RC(2,3) RC(2,4) RC(2,5)   RC(5,0) RC(5,1) RC(5,2) RC(5,3) RC(5,4) RC(5,5)
+        >;
+    };
+
+    kscan0: kscan {
+        compatible = "zmk,kscan-gpio-matrix";
+        label = "KSCAN";
+        wakeup-source;
+        diode-direction = "col2row";
+
+        row-gpios
+            = <&gpio0  5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW0 D5  */
+            , <&gpio0 31 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW1 D16 */
+            , <&gpio1 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW2 D6  */
+            , <&gpio1 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW3 D8  */
+            , <&gpio1  3 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW4 D17 */
+            , <&gpio1 12 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>  /* ROW5 D7  */
+            ;
+
+        col-gpios
+            = <&gpio0  4 GPIO_ACTIVE_HIGH>  /* COL0 D4  */
+            , <&gpio0  9 GPIO_ACTIVE_HIGH>  /* COL1 D14 */
+            , <&gpio0 29 GPIO_ACTIVE_HIGH>  /* COL2 D3  */
+            , <&gpio1  1 GPIO_ACTIVE_HIGH>  /* COL3 D13 */
+            , <&gpio0 28 GPIO_ACTIVE_HIGH>  /* COL4 D2  */
+            , <&gpio0 10 GPIO_ACTIVE_HIGH>  /* COL5 D15 */
+            ;
+    };
+};
+
+// ========================================
+// ポインティング設定（DYA Studio から変更可能）
+// ここの値は初期値。DYA Studio で保存した設定があればそちらが優先される
+// ========================================
+
+// PAW3222 #1: カーソル移動 + AML
+&mouse_runtime_input_processor {
+    scale-multiplier = <2>; // カーソル移動量2/3倍
+    scale-divisor = <3>;
+    x-invert; // カーソルの移動方向調整（センサーの向きに合わせて変更）
+    y-invert;
+
+    // AML（自動マウスレイヤー）
+    temp-layer-enabled;
+    temp-layer = <6>;
+    temp-layer-activation-delay-ms = <400>; // キー入力後400ms以内はAMLに切り替わらない
+    temp-layer-deactivation-delay-ms = <65535>; // タイムアウト時間（最大65535ms）
+};
+
+// PAW3222 #1: 縦スクロール（レイヤー5押下中）
+&scroll_runtime_input_processor {
+    x-codes = <INPUT_REL_X>;
+    y-codes = <INPUT_REL_Y>;
+    xy-to-scroll-enabled;
+    active-layers = <BIT(5)>;
+    scale-multiplier = <2>;
+    scale-divisor = <3>;
+    x-invert;
+    y-invert;
+    axis-snap-mode = <AXIS_SNAP_MODE_Y>;
+    axis-snap-threshold = <65535>;
+};
+
+/ {
+    // PAW3222 #1: 横スクロール（レイヤー7押下中）
+    hscroll_runtime_input_processor: hscroll_runtime_input_processor {
+        compatible = "zmk,input-processor-runtime";
+        processor-label = "hscroll";
+        type = <INPUT_EV_REL>;
+        x-codes = <INPUT_REL_X>;
+        y-codes = <INPUT_REL_Y>;
+        xy-to-scroll-enabled;
+        active-layers = <BIT(7)>;
+        scale-multiplier = <2>;
+        scale-divisor = <3>;
+        rotation-degrees = <0>;
+        track-remainders;
+        axis-snap-mode = <AXIS_SNAP_MODE_X>;
+        axis-snap-threshold = <65535>;
+
+        temp-layer-transparent-behavior = <&trans>;
+        temp-layer-kp-behavior = <&kp>;
+        temp-layer-keep-keycodes = <LEFT_CONTROL LEFT_SHIFT LEFT_ALT LEFT_GUI RIGHT_CONTROL RIGHT_SHIFT RIGHT_ALT RIGHT_GUI>;
+
+        #input-processor-cells = <0>;
+    };
+
+    // PAW3222 #2: 常時スクロール（縦優先、横に大きく動かすとロック解除）
+    scroll2_runtime_input_processor: scroll2_runtime_input_processor {
+        compatible = "zmk,input-processor-runtime";
+        processor-label = "scroll2";
+        type = <INPUT_EV_REL>;
+        x-codes = <INPUT_REL_X>;
+        y-codes = <INPUT_REL_Y>;
+        xy-to-scroll-enabled;
+        scale-multiplier = <2>;
+        scale-divisor = <3>;
+        rotation-degrees = <0>;
+        track-remainders;
+        x-invert;
+        y-invert;
+        axis-snap-mode = <AXIS_SNAP_MODE_Y>;
+        axis-snap-threshold = <100>;
+
+        temp-layer-transparent-behavior = <&trans>;
+        temp-layer-kp-behavior = <&kp>;
+        temp-layer-keep-keycodes = <LEFT_CONTROL LEFT_SHIFT LEFT_ALT LEFT_GUI RIGHT_CONTROL RIGHT_SHIFT RIGHT_ALT RIGHT_GUI>;
+
+        #input-processor-cells = <0>;
+    };
+
+    trackball1_listener: trackball1_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&trackball1>;
+
+        input-processors = <
+            &mouse_runtime_input_processor
+            &zip_mouse_gesture // マウスジェスチャー（方向調整後に置くこと）
+            &scroll_runtime_input_processor
+            &hscroll_runtime_input_processor
+        >;
+    };
+
+    trackball2_listener: trackball2_listener {
+        compatible = "zmk,input-listener";
+        status = "okay";
+        device = <&trackball2>;
+
+        input-processors = <
+            &scroll2_runtime_input_processor
+        >;
+    };
+};
+
+// ========================================
+// SPI
+// PAW3222 は 3線式 SPI（SDIO 1本で送受信）なので MOSI と MISO を同じピンにする
+// ========================================
+
+// 基板標準の spi2 (xiao_spi) は D8〜D10 (P1.13〜P1.15) を使うため、
+// ROW3 / SDIO1 / CS1 と衝突しないよう無効化する
+&spi2 {
+    status = "disabled";
+};
+
+// spi0 / spi1 は i2c0 / i2c1 と同じペリフェラルを共有するため無効化しておく
+&i2c0 {
+    status = "disabled";
+};
+
+&i2c1 {
+    status = "disabled";
+};
+
+&pinctrl {
+    spi0_default: spi0_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 5)>,
+                <NRF_PSEL(SPIM_MOSI, 1, 14)>,
+                <NRF_PSEL(SPIM_MISO, 1, 14)>;
+        };
+    };
+
+    spi0_sleep: spi0_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 1, 5)>,
+                <NRF_PSEL(SPIM_MOSI, 1, 14)>,
+                <NRF_PSEL(SPIM_MISO, 1, 14)>;
+            low-power-enable;
+        };
+    };
+
+    spi1_default: spi1_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
+                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
+                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+        };
+    };
+
+    spi1_sleep: spi1_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
+                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
+                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+            low-power-enable;
+        };
+    };
+};
+
+// PAW3222 #1 (FPC1)
+&spi0 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-1 = <&spi0_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+
+    trackball1: trackball@0 {
+        status = "okay";
+        compatible = "pixart,paw3222";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio1 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        res-cpi = <1500>;
+    };
+};
+
+// PAW3222 #2 (FPC2)
+&spi1 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi1_default>;
+    pinctrl-1 = <&spi1_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+
+    trackball2: trackball@0 {
+        status = "okay";
+        compatible = "pixart,paw3222";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        res-cpi = <1500>;
+    };
+};

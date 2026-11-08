@@ -1,0 +1,33 @@
+manifest:
+  remotes:
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+    - name: sekigon-gonnoc  # PAW3222
+      url-base: https://github.com/sekigon-gonnoc
+    - name: cormoran
+      url-base: https://github.com/cormoran
+    - name: kot149  # マウスジェスチャー
+      url-base: https://github.com/kot149
+  projects:
+    - name: zmk
+      remote: cormoran
+      revision: v0.3-branch+dya
+      import: app/west.yml
+    - name: zmk-driver-paw3222
+      remote: sekigon-gonnoc
+      revision: main
+    - name: zmk-mouse-gesture
+      remote: kot149
+      revision: v1
+    # DYA Studio モジュール
+    - name: zmk-module-ble-management
+      remote: cormoran
+      revision: zmk-v0.3.0.0
+    - name: zmk-module-settings-rpc
+      remote: cormoran
+      revision: zmk-v0.3.0.0
+    - name: zmk-module-runtime-input-processor
+      remote: cormoran
+      revision: zmk-v0.3.0.0
+  self:
+    path: config
