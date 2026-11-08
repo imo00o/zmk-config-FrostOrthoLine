@@ -1,4 +1,4 @@
-// FrostOrthoLine: FPC1 に PAT9125 の高分解能ダイヤル、FPC2 に PAW3222 をつなぐ構成
+// FrostOrthoLine: FPC1 に PAT9125 の高分解能ダイヤル、FPC2 に PAT9125 のマウスをつなぐ構成
 // https://github.com/sekigon-gonnoc/zmk-driver-hires-dial
 
 #include "FrostOrthoLine.dtsi"

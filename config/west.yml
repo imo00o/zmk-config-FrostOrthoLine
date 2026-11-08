@@ -4,7 +4,7 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: cormoran
       url-base: https://github.com/cormoran
-    - name: sekigon-gonnoc  # PAW3222 / hires-dial
+    - name: sekigon-gonnoc  # hires-dial
       url-base: https://github.com/sekigon-gonnoc
     - name: kot149  # マウスジェスチャー
       url-base: https://github.com/kot149
@@ -14,9 +14,6 @@ manifest:
       remote: cormoran
       revision: main+dya
       import: app/west.yml
-    - name: zmk-driver-paw3222
-      remote: sekigon-gonnoc
-      revision: main
     - name: zmk-driver-hires-dial
       remote: sekigon-gonnoc
       revision: master

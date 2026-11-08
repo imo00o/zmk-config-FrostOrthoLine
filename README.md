@@ -1,6 +1,6 @@
 # zmk-config-FrostOrthoLine
 
-FrostOrthoLine（12列×3行の一体型キーボード、高分解能ダイヤル + PAW3222 搭載）用の ZMK ファームウェア設定です。
+FrostOrthoLine（12列×3行の一体型キーボード、高分解能ダイヤル + PAT9125 マウス搭載）用の ZMK ファームウェア設定です。
 
 - ZMK: [cormoran/zmk](https://github.com/cormoran/zmk) の `main+dya`（ZMK main / Zephyr 4.1 ベース、DYA Studio 対応）
 - MCU: Seeed Studio XIAO nRF52840 Plus（ビルドボードは `xiao_ble//zmk`）
@@ -8,7 +8,7 @@ FrostOrthoLine（12列×3行の一体型キーボード、高分解能ダイヤ�
 - FPC1: ダイヤルモジュール（PAT9125 + プッシュスイッチ、I2C、[zmk-driver-hires-dial](https://github.com/sekigon-gonnoc/zmk-driver-hires-dial)）
   - 回転: 通常は縦スクロール、レイヤー1で音量、レイヤー7で横スクロール
   - プッシュスイッチ: 37番目のキー。通常は中クリック、レイヤー1ではミュート
-- FPC2: PAW3222（SPI）
+- FPC2: PAT9125 マウス（I2C、このリポジトリの `src/pat9125_input.c`）
   - カーソル移動 + 自動マウスレイヤー（レイヤー6）、レイヤー5で縦スクロール、レイヤー7で横スクロール
 
 ## ビルド
@@ -17,10 +17,11 @@ FrostOrthoLine（12列×3行の一体型キーボード、高分解能ダイヤ�
 
 ## ファイル構成
 
-- `boards/shields/FrostOrthoLine/FrostOrthoLine.dtsi`: キーマトリクス・プッシュスイッチ・PAW3222・FPC1 の I2C バス
+- `boards/shields/FrostOrthoLine/FrostOrthoLine.dtsi`: キーマトリクス・プッシュスイッチ・FPC1 の I2C バス・FPC2 の PAT9125 マウス
 - `boards/shields/FrostOrthoLine/FrostOrthoLine.overlay`: FPC1 のダイヤル（hires-dial）
 - `boards/shields/FrostOrthoLine/FrostOrthoLine.conf`: ダイヤル用の Kconfig
 - `config/FrostOrthoLine.conf` / `config/FrostOrthoLine.keymap`: 共通の設定とキーマップ
+- `src/pat9125_input.c`、`dts/bindings/input/pixart,pat9125-zmk.yaml`、`Kconfig`: PAT9125 を X/Y カーソル入力として使うドライバ（このリポジトリ自体を Zephyr モジュールとして読み込ませている）
 
 ## DYA Studio
 
@@ -30,14 +31,19 @@ BLE 管理・アイドル/スリープ設定・ポインティング設定（run
 
 ## 注意点
 
-FPC1 の基板側ピン名とダイヤルモジュールのピンは役割が一致しません。ダイヤルモジュールをつなぐと、D10（基板ピン名 RDY/CS 1）が PAT9125 の MOTION、D19（基板ピン名 GND/MOTION 1）がプッシュスイッチ、D18 が SDA、D9 が SCL になります。
+FPC の基板側ピン名と PAT9125 モジュールのピンは役割が一致しません。
+
+- FPC1（ダイヤル）: D18 が SDA、D9 が SCL、D10（基板ピン名 RDY/CS 1）が MOTION、D19（基板ピン名 GND/MOTION 1）がプッシュスイッチ
+- FPC2（マウス）: D0 が SDA、D11 が SCL、D12（基板ピン名 RDY/CS 2）が MOTION。D1（基板ピン名 GND/MOTION 2）は未使用
+
+ダイヤルとマウスの PAT9125 はどちらも I2C アドレス 0x75 なので、FPC1 は i2c1、FPC2 は i2c0 と別のバスにしています。
 
 ROW1 が D16（P0.31）に配線されていますが、このピンは XIAO 内蔵のバッテリー電圧測定用 ADC と同じピンです。そのためバッテリー残量の通知は無効にしています。
 
 キーの物理配置と電気マトリクスの対応は、1本の COL が物理2列分を担当する配線です。キーボードを上から見て左から、上段が「COL5/ROW3、COL5/ROW0、COL4/ROW3、COL4/ROW0…COL0/ROW0」、中段が「COL5/ROW4、COL5/ROW1、COL4/ROW4…COL0/ROW1」、下段が「COL5/ROW5、COL5/ROW2、COL4/ROW5…COL0/ROW2」の順です（右端が COL0）。対応は `FrostOrthoLine.dtsi` の `default_transform` で定義しています。
 
-PAW3222 の移動方向は `x-invert` / `y-invert`、ダイヤルの回転方向は `FrostOrthoLine.overlay` の `invert` で調整します。ポインティングの設定は DYA Studio からも変更できます。
+マウスの移動方向は `FrostOrthoLine.dtsi` の `invert-x` / `invert-y` / `swap-xy`、ダイヤルの回転方向は `FrostOrthoLine.overlay` の `invert` で調整します。ポインティングの設定は DYA Studio からも変更できます。
 
 ZMK 本体のヘッダは ZMK アプリにしか公開されていないため、hires-dial ドライバのビルド用にリポジトリ直下の `CMakeLists.txt` で ZMK のヘッダを全体に公開しています。
 
-Zephyr 標準の PAT912x 入力ドライバで PAT9125 をトラックボールとして使う試験版と、そのために作ったドライバは、`hires-dial` ブランチの履歴（コミット c951e5d）に残っています。
+Zephyr 標準の PAT912x 入力ドライバ（`pixart,pat912x`）は MOTION のエッジ割り込みを取りこぼして反応しなくなったため、割り込みとリセットの扱いを hires-dial と同じにした `src/pat9125_input.c` を使っています。

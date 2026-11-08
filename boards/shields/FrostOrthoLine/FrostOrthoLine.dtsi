@@ -1,4 +1,4 @@
-// FrostOrthoLine 共通定義（キーマトリクス・FPC2 の PAW3222・FPC1 の I2C バスとプッシュスイッチ）
+// FrostOrthoLine 共通定義（キーマトリクス・FPC1 の I2C バスとプッシュスイッチ・FPC2 の PAT9125 マウス）
 // FPC1 のダイヤル（hires-dial）本体の定義は FrostOrthoLine.overlay
 
 #include <dt-bindings/zmk/matrix_transform.h>
@@ -24,11 +24,15 @@
 //   RDY/CS 1     = D10 (P1.15) = MOTION
 //  ※ 基板ピン名とダイヤルモジュールのピンは役割が一致しないので注意
 //
-//  PAW3222 (FPC2, SPI)
-//   SCLK   = D0  (P0.02)
-//   SDIO   = D11 (P0.15)
-//   MOTION = D1  (P0.03)
-//   CS     = D12 (P0.19)
+//  PAT9125 マウス (FPC2, I2C)  ※ダイヤルモジュールと同じピン配置のモジュールを想定
+//   基板ピン名       接続先        モジュール側
+//   SDA/SCLK 2   = D0  (P0.02) = SDA
+//   SCL/SDIO 2   = D11 (P0.15) = SCL
+//   GND/MOTION 2 = D1  (P0.03) = PUSH（未使用）
+//   RDY/CS 2     = D12 (P0.19) = MOTION
+//
+//  ダイヤルとマウスの PAT9125 はどちらも I2C アドレス 0x75 なので、
+//  FPC1 は i2c1、FPC2 は i2c0 と別のバスにしている
 
 / {
     chosen {
@@ -168,16 +172,15 @@
 };
 
 // ========================================
-// ポインティング設定（DYA Studio から変更可能）
+// ポインティング設定（FPC2 の PAT9125 マウス、DYA Studio から変更可能）
 // ここの値は初期値。DYA Studio で保存した設定があればそちらが優先される
+// 移動方向が逆なら x-invert / y-invert を追加する（DYA Studio でも変更可）
 // ========================================
 
-// PAW3222: カーソル移動 + AML
+// カーソル移動 + AML
 &mouse_runtime_input_processor {
     scale-multiplier = <2>; // カーソル移動量2/3倍
     scale-divisor = <3>;
-    x-invert; // カーソルの移動方向調整（センサーの向きに合わせて変更）
-    y-invert;
 
     // AML（自動マウスレイヤー）
     temp-layer-enabled;
@@ -186,7 +189,7 @@
     temp-layer-deactivation-delay-ms = <65535>; // タイムアウト時間（最大65535ms）
 };
 
-// PAW3222: 縦スクロール（レイヤー5押下中）
+// 縦スクロール（レイヤー5押下中）
 &scroll_runtime_input_processor {
     x-codes = <INPUT_REL_X>;
     y-codes = <INPUT_REL_Y>;
@@ -194,14 +197,12 @@
     active-layers = <BIT(5)>;
     scale-multiplier = <2>;
     scale-divisor = <3>;
-    x-invert;
-    y-invert;
     axis-snap-mode = <AXIS_SNAP_MODE_Y>;
     axis-snap-threshold = <65535>;
 };
 
 / {
-    // PAW3222: 横スクロール（レイヤー7押下中）
+    // 横スクロール（レイヤー7押下中）
     hscroll_runtime_input_processor: hscroll_runtime_input_processor {
         compatible = "zmk,input-processor-runtime";
         processor-label = "hscroll";
@@ -224,10 +225,10 @@
         #input-processor-cells = <0>;
     };
 
-    trackball1_listener: trackball1_listener {
+    pat9125_mouse_listener: pat9125_mouse_listener {
         compatible = "zmk,input-listener";
         status = "okay";
-        device = <&trackball1>;
+        device = <&pat9125_mouse>;
 
         input-processors = <
             &mouse_runtime_input_processor
@@ -239,8 +240,9 @@
 };
 
 // ========================================
-// SPI（PAW3222, FPC2）
-// PAW3222 は 3線式 SPI（SDIO 1本で送受信）なので MOSI と MISO を同じピンにする
+// ペリフェラル割り当て
+//   i2c0: FPC2 の PAT9125 マウス
+//   i2c1: FPC1 のダイヤル
 // ========================================
 
 // 基板標準の spi2 (xiao_spi) は D8〜D10 (P1.13〜P1.15) を使うため、
@@ -250,7 +252,7 @@
 };
 
 // spi0 と i2c0、spi1 と i2c1 はそれぞれ同じペリフェラルを共有する
-&i2c0 {
+&spi0 {
     status = "disabled";
 };
 
@@ -259,20 +261,20 @@
 };
 
 &pinctrl {
-    // PAW3222 (FPC2)
-    spi0_default: spi0_default {
+    // FPC2 の PAT9125 マウス
+    i2c0_default: i2c0_default {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
-                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
-                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            bias-pull-up;
         };
     };
 
-    spi0_sleep: spi0_sleep {
+    i2c0_sleep: i2c0_sleep {
         group1 {
-            psels = <NRF_PSEL(SPIM_SCK, 0, 2)>,
-                <NRF_PSEL(SPIM_MOSI, 0, 15)>,
-                <NRF_PSEL(SPIM_MISO, 0, 15)>;
+            psels = <NRF_PSEL(TWIM_SDA, 0, 2)>,
+                <NRF_PSEL(TWIM_SCL, 0, 15)>;
+            bias-pull-up;
             low-power-enable;
         };
     };
@@ -296,26 +298,32 @@
     };
 };
 
-// PAW3222 (FPC2)
-&spi0 {
+// FPC2: PAT9125 マウス（src/pat9125_input.c のドライバで X/Y をカーソル入力として出す）
+&i2c0 {
     status = "okay";
-    compatible = "nordic,nrf-spim";
-    pinctrl-0 = <&spi0_default>;
-    pinctrl-1 = <&spi0_sleep>;
+    compatible = "nordic,nrf-twim";
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
-    cs-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+    clock-frequency = <I2C_BITRATE_FAST>;
 
-    trackball1: trackball@0 {
+    pat9125_mouse: pat9125_mouse@75 {
         status = "okay";
-        compatible = "pixart,paw3222";
-        reg = <0>;
-        spi-max-frequency = <2000000>;
-        irq-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-        res-cpi = <1500>;
+        compatible = "pixart,pat9125-zmk";
+        reg = <0x75>;
+        motion-gpios = <&gpio0 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; // D12（基板ピン名 RDY/CS 2）
+        res-x-cpi = <1275>; // 0〜1275（5刻み）
+        res-y-cpi = <1275>;
+        motion-read-interval-ms = <8>; // MOTION が出ている間の読み取り間隔
+        // swap-xy;  // X と Y を入れ替える場合
+        // invert-x; // 向きが逆なら有効化（DYA Studio の mouse プロセッサでも変更可）
+        // invert-y;
+        sleep1-enable;
+        sleep2-enable;
     };
 };
 
-// FPC1 の I2C バス（ダイヤル本体の定義は FrostOrthoLine.overlay）
+// FPC1: ダイヤルの I2C バス（ダイヤル本体の定義は FrostOrthoLine.overlay）
 &i2c1 {
     status = "okay";
     compatible = "nordic,nrf-twim";
