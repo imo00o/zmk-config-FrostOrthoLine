@@ -18,7 +18,7 @@ manifest:
       revision: main
     - name: zmk-driver-hires-dial
       remote: sekigon-gonnoc
-      revision: main
+      revision: master
     - name: zmk-mouse-gesture
       remote: kot149
       revision: v1
