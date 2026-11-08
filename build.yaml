@@ -7,5 +7,11 @@ include:
   - board: xiao_ble//zmk
     shield: FrostOrthoLine_pat9125
     snippet: studio-rpc-usb-uart
+  # PAT9125 トラックボール試験版のログ出力付き（USB シリアルにドライバのログを出す）
+  - board: xiao_ble//zmk
+    shield: FrostOrthoLine_pat9125
+    snippet: zmk-usb-logging
+    cmake-args: -DCONFIG_INPUT_LOG_LEVEL_DBG=y
+    artifact-name: FrostOrthoLine_pat9125_logging
   - board: xiao_ble//zmk
     shield: settings_reset
