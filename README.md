@@ -36,7 +36,7 @@ FPC2 の基板側ピン名とダイヤルモジュールのピンは役割が一
 
 ROW1 が D16（P0.31）に配線されていますが、このピンは XIAO 内蔵のバッテリー電圧測定用 ADC と同じピンです。そのためバッテリー残量の通知は無効にしています。
 
-キーの物理配置と電気マトリクスの対応は、1本の COL が物理2列分を担当する配線です。左から上段が「COL0/ROW0、COL0/ROW3、COL1/ROW0、COL1/ROW3…」、中段が「COL0/ROW1、COL0/ROW4、COL1/ROW1…」、下段が「COL0/ROW2、COL0/ROW5、COL1/ROW2…」の順です。対応は `FrostOrthoLine.dtsi` の `default_transform` で定義しています。
+キーの物理配置と電気マトリクスの対応は、1本の COL が物理2列分を担当する配線です。キーボードを上から見て左から、上段が「COL5/ROW3、COL5/ROW0、COL4/ROW3、COL4/ROW0…COL0/ROW0」、中段が「COL5/ROW4、COL5/ROW1、COL4/ROW4…COL0/ROW1」、下段が「COL5/ROW5、COL5/ROW2、COL4/ROW5…COL0/ROW2」の順です（右端が COL0）。対応は `FrostOrthoLine.dtsi` の `default_transform` で定義しています。
 
 センサーの移動方向は `x-invert` / `y-invert`（PAT9125 トラックボール版は `invert-x` / `invert-y` またはランタイムプロセッサ `pat9125`）で調整します。DYA Studio からも変更できます。
 

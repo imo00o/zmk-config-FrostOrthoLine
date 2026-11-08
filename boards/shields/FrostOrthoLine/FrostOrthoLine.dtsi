@@ -82,17 +82,19 @@
 
     // 電気的マトリクス 6行 x 6列 = 36キー → 物理配置 12列 x 3行
     // 1本の COL が物理2列分を担当する（RC(行,列) = RC(ROW,COL)）
-    //   物理 2k 列目   : COLk の ROW0 / ROW1 / ROW2（上段 / 中段 / 下段）
-    //   物理 2k+1 列目 : COLk の ROW3 / ROW4 / ROW5（上段 / 中段 / 下段）
+    // キーボードを上から見て左から（COL5 が左端、COL0 が右端）:
+    //   上段: COL5/ROW3, COL5/ROW0, COL4/ROW3, COL4/ROW0, ... COL0/ROW3, COL0/ROW0
+    //   中段: COL5/ROW4, COL5/ROW1, COL4/ROW4, COL4/ROW1, ... COL0/ROW4, COL0/ROW1
+    //   下段: COL5/ROW5, COL5/ROW2, COL4/ROW5, COL4/ROW2, ... COL0/ROW5, COL0/ROW2
     // 最後の RC(6,0) はダイヤルのプッシュスイッチ（kscan_push）
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <6>;
         rows = <7>;
         map = <
-            RC(0,0) RC(3,0) RC(0,1) RC(3,1) RC(0,2) RC(3,2)   RC(0,3) RC(3,3) RC(0,4) RC(3,4) RC(0,5) RC(3,5)
-            RC(1,0) RC(4,0) RC(1,1) RC(4,1) RC(1,2) RC(4,2)   RC(1,3) RC(4,3) RC(1,4) RC(4,4) RC(1,5) RC(4,5)
-            RC(2,0) RC(5,0) RC(2,1) RC(5,1) RC(2,2) RC(5,2)   RC(2,3) RC(5,3) RC(2,4) RC(5,4) RC(2,5) RC(5,5)
+            RC(3,5) RC(0,5) RC(3,4) RC(0,4) RC(3,3) RC(0,3)   RC(3,2) RC(0,2) RC(3,1) RC(0,1) RC(3,0) RC(0,0)
+            RC(4,5) RC(1,5) RC(4,4) RC(1,4) RC(4,3) RC(1,3)   RC(4,2) RC(1,2) RC(4,1) RC(1,1) RC(4,0) RC(1,0)
+            RC(5,5) RC(2,5) RC(5,4) RC(2,4) RC(5,3) RC(2,3)   RC(5,2) RC(2,2) RC(5,1) RC(2,1) RC(5,0) RC(2,0)
             RC(6,0)
         >;
     };
